@@ -11,8 +11,8 @@ class ReviewDataset(Dataset):
         return len(self.df)
     
     def __getitem__(self, index):
-        input_x = self.df.loc[index, 'input_x']
-        label = self.df.loc[index, 'Label']
+        input_x = self.df.loc[index, 'input_x'] # Load input features
+        label = self.df.loc[index, 'Label'] # Load labels
         return torch.tensor(input_x), torch.tensor(label, dtype=torch.float)
         
         

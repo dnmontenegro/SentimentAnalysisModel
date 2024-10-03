@@ -26,6 +26,7 @@ def main():
         device = torch.device('cpu')
     print('Device: ', device)
     
+    # Parameter settings
     mode = 'train'
     Batch_size = 16
     n_layers = 1
@@ -41,15 +42,18 @@ def main():
     embedding_matrix = None
     pretrain = False
 
+    # Loading training and test data
     training_set = ReviewDataset('training_data.csv')
     training_generator = DataLoader(training_set, batch_size=Batch_size, shuffle=True, num_workers=1)
     test_set = ReviewDataset('testing_data.csv')
     test_generator = DataLoader(test_set, batch_size=Batch_size, shuffle=False, num_workers=1)
 
+    # Read tokens and load pre-train embedding
     with open('tokens_dict.json', 'r') as f:
         tokens2index = json.load(f)
     vocab_size = len(tokens2index)
 
+    # Import model and load model to device
     model = LSTMModel(vocab_size, output_size, embedding_dim, embedding_matrix, hidden_dim, n_layers, input_len, pretrain)
     model.to(device)
 

@@ -11,6 +11,7 @@ class LSTMModel(nn.Module):
         hidden_dim, n_layers, input_len, pretrain=False):
         super().__init__()
 
+        # Setting up layers
         self.output_size = output_size
         self.n_layers = n_layers
         self.hidden_dim = hidden_dim
@@ -29,12 +30,15 @@ class LSTMModel(nn.Module):
         self.sigmoid = nn.Sigmoid()
         
     def init_weights(self):
+        # Intializing weights
         self.embedding.weight.data.uniform_(-0.1, 0.1)
     
     def _init_hidden(self, batch_size):
+        # Initializing hidden state and cell state
         return(autograd.Variable(torch.randn(self.n_layers, batch_size, self.hidden_dim)).to(device), autograd.Variable(torch.randn(self.n_layers, batch_size, self.hidden_dim)).to(device))
 
     def forward(self, x):
+        # Feeding input into LSTM model
         batch_size = x.size(0)
         hidden_cell = self._init_hidden(batch_size)
         embeds = self.embedding(x)
