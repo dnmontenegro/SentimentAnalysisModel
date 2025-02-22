@@ -1,3 +1,6 @@
+'''
+This program prepares the raw data for analysis. 
+'''
 import re
 from collections import Counter
 import json
@@ -9,13 +12,13 @@ def clean(data):
     return data
 
 def length(data):
-    data['seq_words'] = data['Clean_Content'].apply(lambda x: x.split()) 
-    data['seq_len'] = data['seq_words'].apply(lambda x: len(x))
+    data['seq_words'] = data['Clean_Content'].apply(lambda x: x.split()) # Split data into individual words
+    data['seq_len'] = data['seq_words'].apply(lambda x: len(x)) # Get total number of words in each review
     print(data['seq_len'].describe())
     min_seq_len = 100
     max_seq_len = 600
-    data = data[min_seq_len <= data['seq_len']] # Remove short sentences
-    data = data[data['seq_len'] <= max_seq_len] # Remove long sentences
+    data = data[min_seq_len <= data['seq_len']] # Remove short reviews
+    data = data[data['seq_len'] <= max_seq_len] # Remove long reviews
     return data
 
 def tokenize(data, top_K = 500):
@@ -29,7 +32,7 @@ def tokenize(data, top_K = 500):
     tokens_dict = {w:i+2 for i, (w,c) in enumerate(tokens_top)}
     tokens_dict['<pad>'] = 0
     tokens_dict['<unk>'] = 1
-    with open('tokens_dict.json', 'w') as outfile:
+    with open('tokens_dict.json', 'w') as outfile: # Save to json file
         json.dump(tokens_dict, outfile, indent=4)
     return tokens_dict
 
@@ -50,11 +53,11 @@ def main():
 	training_data = pandas.read_csv('training_raw_data.csv', index_col=None, encoding='utf8')
 	testing_data = pandas.read_csv('testing_raw_data.csv', index_col=None, encoding='utf8')
 
-	#Cleaning data
+	# Cleaning data
 	training_data = clean(training_data)
 	testing_data = clean(testing_data) 
 
-	# Removing long and short sentences
+	# Removing long and short reviews
 	training_data = length(training_data) 
 	testing_data = length(testing_data)
 		

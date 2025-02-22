@@ -1,3 +1,6 @@
+'''
+This program defines a class that reads data from a csv file and loads input features and labels for a given index.
+'''
 from torch.utils.data import Dataset
 import pandas
 from ast import literal_eval

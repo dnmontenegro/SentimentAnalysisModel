@@ -1,3 +1,6 @@
+'''
+This program uses an LSTM model to conduct sentiment analysis on a dataset of movie reviews.
+'''
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from data_loader import ReviewDataset
@@ -30,13 +33,13 @@ def main():
     mode = 'train'
     Batch_size = 16
     n_layers = 1
-    input_len = 150
-    embedding_dim = 200
-    hidden_dim = 50
+    input_len = 150 # Input seq length aligned with data preprocessing
+    embedding_dim = 200 # Word embedding length
+    hidden_dim = 50 # LSTM hidden dim
     output_size = 1
     num_epoches = 1
     learning_rate = 0.005
-    clip = 5
+    clip = 5 # Gradient clipping
     load_cpt = False
     ckp_path = 'cpt/name.pt'
     embedding_matrix = None
@@ -48,7 +51,7 @@ def main():
     test_set = ReviewDataset('testing_data.csv')
     test_generator = DataLoader(test_set, batch_size=Batch_size, shuffle=False, num_workers=1)
 
-    # Read tokens and load pre-train embedding
+    # Read tokens
     with open('tokens_dict.json', 'r') as f:
         tokens2index = json.load(f)
     vocab_size = len(tokens2index)
@@ -57,6 +60,7 @@ def main():
     model = LSTMModel(vocab_size, output_size, embedding_dim, embedding_matrix, hidden_dim, n_layers, input_len, pretrain)
     model.to(device)
 
+    # Define optimizer and loss function
     optimizer = optim.Adam(model.parameters(),lr=learning_rate)  
     loss_fun = nn.BCELoss()
     
@@ -67,6 +71,7 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoches = checkpoint['epoch']
         
+    # Training model
     print("---- Model training ----")
     global_step = 0
     if mode == 'train':
@@ -75,12 +80,13 @@ def main():
             for x_batch, y_labels in training_generator:
                 global_step += 1
                 x_batch, y_labels = x_batch.to(device), y_labels.to(device)
-                y_out = model(x_batch)
+                y_out = model(x_batch) # Get prediction result
                 loss = loss_fun(y_out, y_labels)
-
+                
+                # Back propagation
                 optimizer.zero_grad()
                 loss.backward()
-                nn.utils.clip_grad_norm_(model.parameters(), clip)
+                nn.utils.clip_grad_norm_(model.parameters(), clip) # Gradient clipping
                 optimizer.step()
 
                 if global_step%10==0:
@@ -92,6 +98,7 @@ def main():
             writer.flush()	
     writer.close()	
             
+    # Testing model
     print("---- Model testing ----")
     total = 0
     accuracy_count = 0
@@ -100,8 +107,8 @@ def main():
     with torch.no_grad():
         for x_batch, y_labels in test_generator:
             x_batch, y_labels = x_batch.to(device), y_labels.to(device)
-            y_out = model(x_batch)
-            y_pred = torch.round(y_out)
+            y_out = model(x_batch) # Get prediction result
+            y_pred = torch.round(y_out) # Predict label
 
             total += len(y_labels)
             accuracy_count += ((y_pred==y_labels).sum().item())
